@@ -1,0 +1,15 @@
+digraph _logic_siteProperty {
+rankdir=LR;
+node [shape = circle]; loggedIn loggedOut;
+node [shape = octagon]; badState;
+node [shape = point]; _s_s;
+_s_s -> loggedOut;
+loggedIn -> loggedIn [ label = "(1) statusChanged\\\\loginStatus = ! loginStatus ; "];
+loggedIn -> loggedOut [ label = "(2) logout\\loginStatus == false "];
+loggedIn -> loggedIn [ label = "(3) viewAlerts"];
+loggedIn -> badState [ label = "(4) logout\\loginStatus == true \\System . out . println ( \" Bad State! \" ) ; "];
+loggedOut -> loggedOut [ label = "(1) statusChanged\\\\loginStatus = ! loginStatus ; "];
+loggedOut -> loggedIn [ label = "(2) login\\loginStatus == true "];
+loggedOut -> badState [ label = "(3) login\\loginStatus == false \\System . out . println ( \" Bad State! \" ) ; "];
+loggedOut -> badState [ label = "(4) viewAlerts\\\\System . out . println ( \" Bad State! \" ) ; "];
+}

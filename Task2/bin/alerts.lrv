@@ -1,0 +1,67 @@
+GLOBAL {
+	VARIABLES {
+		int alertCount = 0;
+		boolean loginStatus = false;
+	}
+	
+	EVENTS{
+		logout() = {*.validLogOut()}
+		login() = {*.validLogin()}
+		viewAlerts() = {*.viewAlerts()}
+		createAlert() = {*.alertCreated()}
+		deleteAlerts() = {*.alertsDeleted()}
+		statusChanged() = {*.statusChanged()}
+	}
+	
+	PROPERTY logins{
+		STATES{
+			BAD{
+				badState
+			}
+			NORMAL{
+				loggedIn
+			}
+			STARTING{
+				loggedOut
+			}
+		}
+		TRANSITIONS{
+%%			The following 2 transitions are only used to update login status which is in turn used to detect bad states
+			loggedOut -> loggedOut [statusChanged\\loginStatus = !loginStatus;System.out.println("Login Status changed, new status: " + loginStatus);]
+			loggedIn -> loggedIn [statusChanged\\loginStatus = !loginStatus;System.out.println("Login Status changed, new status: " + loginStatus);]
+			
+			loggedOut -> loggedIn [login\loginStatus == true]
+			loggedOut -> badState [login\loginStatus == false\System.out.println("Bad State! Last status was " + loginStatus);]
+			loggedOut -> badState [viewAlerts\\System.out.println("Bad State! Last status was " + loginStatus);]
+			
+			loggedIn -> loggedOut [logout\loginStatus == false]
+			loggedIn -> loggedIn [viewAlerts]
+			loggedIn -> badState [logout\loginStatus == true\System.out.println("Bad State! Last status was " + loginStatus);]
+		}
+	}
+	
+	PROPERTY alerts{
+		STATES{
+			BAD{
+				badState
+			}
+			NORMAL{
+				lessThanOr5
+				moreThan5
+			} 
+			STARTING{
+				empty
+			}
+		}
+		TRANSITIONS{
+			empty -> lessThanOr5 [createAlert\\alertCount++;]
+			
+			lessThanOr5 -> lessThanOr5 [createAlert\alertCount < 5\alertCount++;]
+			lessThanOr5 -> moreThan5 [createAlert\alertCount >= 5\alertCount++;]
+			lessThanOr5 -> empty [deleteAlerts\\alertCount = 0;]
+			
+			moreThan5 -> moreThan5 [createAlert\\alertCount++;]
+			moreThan5 -> empty [deleteAlerts\\alertCount = 0;]
+		}
+	}
+}
